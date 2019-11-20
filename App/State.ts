@@ -3,12 +3,12 @@ interface IState {
     tick?: number;
 }
 
-var state = {} as IState;
+var staticState = {} as IState;
 
 export function setState(newState: (state: IState) => IState) {
-    state = {...state, ...newState(state)};
+    staticState = {...staticState, ...newState(staticState)};
 }
 
 export function getState() {
-    return state;
+    return staticState;
 }
