@@ -1,8 +1,9 @@
 import { read, utils } from "xlsx";
 import * as m from "mithril";
-import { js2xml, json2xml } from "xml-js";
+import { js2xml } from "xml-js";
 import { IReportRoot } from "./ReportInterface";
 import { saveAs } from "file-saver";
+import { format } from "date-fns";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function saveTextFile(text: string, name: string) {
@@ -11,93 +12,89 @@ function saveTextFile(text: string, name: string) {
 }
 
 function redraw(state) {
-    m.render(
-        document.body,
-        <div class="container mt-4 mb-4">
-            <div class="custom-file">
-                <input
-                    class="custom-file-input"
-                    id="customFile"
-                    type="file"
-                    onchange={event => {
-                        if (event.target.files.length === 0) {
-                            return;
-                        }
-
-                        const reader = new FileReader();
-                        reader.onload = function fileReadCompleted() {
-                            var workbook2 = read(reader.result, { type: "array" });
-                            var first_sheet_name = workbook2.SheetNames[1];
-                            var address_of_cell = "C1";
-
-                            /* Get worksheet */
-                            var worksheet = workbook2.Sheets[first_sheet_name];
-
-                            /* Find desired cell */
-                            var desired_cell = worksheet[address_of_cell];
-
-                            /* Get the value */
-                            var desired_value = desired_cell;
-                            console.log(workbook2);
-                            console.log(desired_value);
-
-                            var range = { s: utils.decode_cell("A1"), e: utils.decode_cell("C4") };
-                            var dataRange = [];
-                            /* Iterate through each element in the structure */
-                            for (var R = range.s.r; R <= range.e.r; ++R) {
-                                for (var C = range.s.c; C <= range.e.c; ++C) {
-                                    var cell_address = { c: C, r: R };
-                                    var data = utils.encode_cell(cell_address);
-                                    dataRange.push(worksheet[data]);
-                                }
+    m.render(document.body, [
+        <div class="flex-grow-1">
+            <div class="container mt-4 mb-4">
+                <div class="custom-file">
+                    <input
+                        class="custom-file-input"
+                        id="customFile"
+                        type="file"
+                        onchange={event => {
+                            if (event.target.files.length === 0) {
+                                return;
                             }
-                            console.log(dataRange);
-                            //console.log("Asdfasdfa");
-                            //var workbook = new Workbook();
-                            //workbook.xlsx.load(reader.result as Buffer).then(function() {
-                            //    console.log(workbook.worksheets[0].getSheetValues());
-                            //});
 
-                            redraw({ ...state, data: dataRange });
-                        };
-                        var arr = reader.readAsArrayBuffer(event.target.files[0]);
-                    }}
-                />
-                <label class="custom-file-label" for="customFile">
-                    Vyberte excel
-                </label>
+                            const reader = new FileReader();
+                            reader.onload = function fileReadCompleted() {
+                                var workbook = read(reader.result, { type: "array" });
+                                var first_sheet_name = workbook.SheetNames[1];
+                                var worksheet = workbook.Sheets[first_sheet_name];
+                                var range = {
+                                    s: utils.decode_cell("A1"),
+                                    e: utils.decode_cell("C4")
+                                };
+                                var dataRange = [];
+                                /* Iterate through each element in the structure */
+                                for (var R = range.s.r; R <= range.e.r; ++R) {
+                                    for (var C = range.s.c; C <= range.e.c; ++C) {
+                                        var cell_address = { c: C, r: R };
+                                        var data = utils.encode_cell(cell_address);
+                                        dataRange.push(worksheet[data]);
+                                    }
+                                }
+                                redraw({ ...state, data: dataRange });
+                            };
+                            reader.readAsArrayBuffer(event.target.files[0]);
+                        }}
+                    />
+                    <label class="custom-file-label" for="customFile">
+                        Vyberte excel
+                    </label>
+                </div>
+                {state?.xml && (
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <pre>
+                                <code>{state.xml}</code>
+                            </pre>
+                        </div>
+                    </div>
+                )}
+                {state?.data && (
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-primary"
+                                onclick={event => {
+                                    saveTextFile(
+                                        JSON.stringify(state.data, null, 2),
+                                        "dataRange.json"
+                                    );
+                                }}>
+                                Prevziať
+                            </button>
+                            <pre>
+                                <code>{JSON.stringify(state.data, null, 2)}</code>
+                            </pre>
+                        </div>
+                    </div>
+                )}
             </div>
-            {state?.xml && (
-                <div class="card mt-3">
-                    <div class="card-body">
-                        <pre>
-                            <code>{state.xml}</code>
-                        </pre>
-                    </div>
-                </div>
-            )}
-            {state?.data && (
-                <div class="card mt-3">
-                    <div class="card-body">
-                        <button
-                            type="button"
-                            class="btn btn-sm btn-primary"
-                            onclick={event => {
-                                saveTextFile(JSON.stringify(state.data, null, 2), "dataRange.json");
-                            }}>
-                            Prevziať
-                        </button>
-                        <pre>
-                            <code>{JSON.stringify(state.data, null, 2)}</code>
-                        </pre>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+        </div>,
+        <footer class="d-block bg-light p-3">
+            <div class="float-right">
+                {"Posledné spustenie: " + format(new Date(state.lastRun ?? new Date()), "dd.MM.yyyy hh:mm:ss")}
+            </div>
+        </footer>
+    ]);
 }
 
 document.addEventListener("DOMContentLoaded", function(event) {
+    var lastRun = localStorage.getItem("lastRun");
+    localStorage.setItem("lastRun", new Date().toISOString());
+
     var r = {
         SZPReport: {
             _attributes: {
@@ -125,13 +122,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     var xml =
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' +
-        json2xml(JSON.stringify(r, null, 2), {
+        js2xml(r, {
             compact: true,
             ignoreComment: true,
             spaces: 4
         });
 
-    console.log(xml);
-
-    redraw({ xml });
+    redraw({ lastRun, xml });
 });
