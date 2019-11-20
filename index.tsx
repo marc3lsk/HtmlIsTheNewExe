@@ -1,10 +1,10 @@
-import { read, utils } from "xlsx";
 import * as m from "mithril";
+import { read, utils } from "xlsx";
 import { js2xml } from "xml-js";
-import { IReportRoot } from "./ReportInterface";
 import { saveAs } from "file-saver";
 import { format } from "date-fns";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { IReportRoot } from "./ReportInterface";
 
 function saveTextFile(text: string, name: string) {
     var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
@@ -31,13 +31,13 @@ function redraw(state) {
                                 var first_sheet_name = workbook.SheetNames[1];
                                 var worksheet = workbook.Sheets[first_sheet_name];
                                 var range = {
-                                    s: utils.decode_cell("A1"),
-                                    e: utils.decode_cell("C4")
+                                    start: utils.decode_cell("A1"),
+                                    end: utils.decode_cell("C4")
                                 };
                                 var dataRange = [];
                                 /* Iterate through each element in the structure */
-                                for (var R = range.s.r; R <= range.e.r; ++R) {
-                                    for (var C = range.s.c; C <= range.e.c; ++C) {
+                                for (var R = range.start.r; R <= range.end.r; ++R) {
+                                    for (var C = range.start.c; C <= range.end.c; ++C) {
                                         var cell_address = { c: C, r: R };
                                         var data = utils.encode_cell(cell_address);
                                         dataRange.push(worksheet[data]);
@@ -85,7 +85,8 @@ function redraw(state) {
         </div>,
         <footer class="d-block bg-light p-3">
             <div class="float-right">
-                {"Posledné spustenie: " + format(new Date(state.lastRun ?? new Date()), "dd.MM.yyyy hh:mm:ss")}
+                {"Posledné spustenie: " +
+                    format(new Date(state.lastRun ?? new Date()), "dd.MM.yyyy hh:mm:ss")}
             </div>
         </footer>
     ]);
