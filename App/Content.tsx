@@ -1,25 +1,16 @@
 import * as m from "mithril";
+import { IRenderProps } from "./Interfaces";
 
 interface IState {
     counter?: number;
 }
 
-export default ({
-    redraw,
-    getState,
-    setState,
-    init = false
-}: {
-    redraw: () => any;
-    getState: () => IState;
-    setState: (newState: (state: IState) => IState) => void;
-    init?: boolean;
-}) => {
-    if (init) {
-        setState(state => ({ counter: 1 }));
+export default (props: IRenderProps<IState>) => {
+    if (props.init) {
+        props.setState(state => ({ counter: 1 }));
     }
 
-    var state = getState();
+    const state = props.getState();
 
     return (
         <div class="container mt-4 mb-4">
@@ -27,8 +18,8 @@ export default ({
                 type="button"
                 class="btn btn-primary btn-lg"
                 onclick={event => {
-                    setState(state => ({ counter: state.counter + 1 }));
-                    redraw();
+                    props.setState(state => ({ counter: state.counter + 1 }));
+                    props.redraw();
                 }}>
                 Hello World!{new Array(state.counter).join("!")}
             </button>

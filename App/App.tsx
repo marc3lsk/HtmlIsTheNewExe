@@ -10,7 +10,7 @@ function redraw(init = false) {
         <footer
             class="d-block bg-light p-3"
             oncreate={vnode => {
-                var redraw = function(init = false) {
+                function redraw(init = false) {
                     m.render(vnode.dom, $Footer({ redraw, getState, setState, init }));
                 };
                 redraw(init);
