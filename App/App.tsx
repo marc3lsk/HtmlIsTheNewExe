@@ -6,14 +6,7 @@ import footer from "./Footer";
 
 function redraw(init = false) {
     m.render(document.body, [
-        <div
-            class="flex-grow-1"
-            oncreate={vnode => {
-                var redraw = function(init = false) {
-                    m.render(vnode.dom, content({ redraw, getState, setState, init }));
-                };
-                redraw(init);
-            }}></div>,
+        <div class="flex-grow-1">{content({ redraw, getState, setState, init })}</div>,
         <footer
             class="d-block bg-light p-3"
             oncreate={vnode => {
