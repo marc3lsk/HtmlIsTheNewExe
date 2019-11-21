@@ -6,9 +6,7 @@ interface IState {
 }
 
 export default (props: IRenderProps<IState>) => {
-    if (props.init) {
-        props.setState(state => ({ tick: 1 }));
-    }
+    props.setState(state => ({ tick: state.tick ?? 1 }));
 
     const state = props.getState();
 
