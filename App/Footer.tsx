@@ -16,7 +16,7 @@ export default (props: IRenderProps<IState>) => {
         <div class="float-right">
             <button
                 type="button"
-                class="btn btn-secondary"
+                class="btn btn-outline-secondary"
                 oncreate={vnode => {
                     setInterval(() => {
                         props.setState(state => ({ tick: state.tick + 1 }));
