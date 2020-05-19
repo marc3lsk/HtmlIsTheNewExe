@@ -1,7 +1,4 @@
-interface IState {
-    counter?: number;
-    tick?: number;
-}
+import { IState } from "./Interfaces";
 
 var staticState = {} as IState;
 

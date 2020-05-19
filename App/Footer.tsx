@@ -1,12 +1,12 @@
 import * as m from "mithril";
 import { IRenderProps } from "./Interfaces";
 
-interface IState {
-    tick?: number;
+export interface IState {
+    tictoc?: number;
 }
 
 export default (props: IRenderProps<IState>) => {
-    props.setState(state => ({ tick: state.tick ?? 1 }));
+    props.setState((state) => ({ tictoc: state.tictoc ?? 1 }));
 
     const state = props.getState();
 
@@ -15,17 +15,17 @@ export default (props: IRenderProps<IState>) => {
             <button
                 type="button"
                 class="btn btn-outline-secondary"
-                oncreate={vnode => {
+                oncreate={(vnode) => {
                     setInterval(() => {
-                        props.setState(state => ({ tick: state.tick + 1 }));
+                        props.setState((state) => ({ tictoc: state.tictoc + 1 }));
                         props.redraw();
                     }, 1000);
                 }}
-                onclick={event => {
-                    props.setState(state => ({ tick: state.tick - 1 }));
+                onclick={(event) => {
+                    props.setState((state) => ({ tictoc: state.tictoc - 1 }));
                     props.redraw();
                 }}>
-                {state.tick}
+                {state.tictoc}
             </button>
         </div>
     );
